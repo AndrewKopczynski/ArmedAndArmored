@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+
 using SFML.Graphics;
 using SFML.Window;
 
@@ -8,7 +9,7 @@ using Box2DX.Collision;
 using Box2DX.Common;
 using Box2DX.Dynamics;
 
-namespace BallMaze
+namespace AaA
 {
     public static class Program
     {
@@ -38,13 +39,12 @@ namespace BallMaze
             Vec2 gravity = new Vec2(0, 10.0f);
 
             AABB worldAabb = new AABB();
-            worldAabb.LowerBound.Set(-200.0f, -100.0f);
-            worldAabb.UpperBound.Set(200.0f, 200.0f);
+            worldAabb.LowerBound.Set(-0.0f, 0.0f); //negative coord
+            worldAabb.UpperBound.Set(200.0f, 200.0f); //positive coord
 
             Box2DX.Dynamics.World world = new Box2DX.Dynamics.World(worldAabb, gravity, false);
-            CreateGround(world, 500, 500);
+            //CreateGround(world, 500, 500);
 
-            Vector2i pixelPos = new Vector2i(0, 0);
             Vector2f worldPos = new Vector2f(0f, 0f); ;
 
             m_window = new RenderWindow(new VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "SFML Window");
@@ -56,13 +56,15 @@ namespace BallMaze
             m_window.MouseWheelMoved += new EventHandler<MouseWheelEventArgs>(OnMouseScroll);
             m_window.KeyPressed += new EventHandler<KeyEventArgs>(OnKeyDown);
             m_window.KeyReleased += new EventHandler<KeyEventArgs>(OnKeyUp);
-            m_window.MouseButtonPressed += (sender, args) =>
-                        {
-                            int mouseX = (int) worldPos.X;
-                            int mouseY = (int) worldPos.Y;
+
+
+            //m_window.MouseButtonPressed += (sender, args) =>
+            //            {
+            //                int mouseX = (int) worldPos.X;
+            //                int mouseY = (int) worldPos.Y;
  
-                            CreateBox(world, mouseX, mouseY);
-                        };
+            //                CreateBox(world, mouseX, mouseY);
+            //            };
 
             //Image image = new Image("image here");
 
@@ -92,7 +94,7 @@ namespace BallMaze
                 m_window.DispatchEvents();
 
 
-                //UPDATe
+                //UPDATE ===============================================================================================================
                 Vector2f lineOrigin = new Vector2f(0, 0);
                 float lineX = lineOrigin.X + worldPos.X;
                 float lineY = lineOrigin.Y + worldPos.Y;
@@ -101,23 +103,19 @@ namespace BallMaze
 
                 lineR = (lineR * 180) / System.Math.PI;
 
-                RectangleShape line = new RectangleShape(new Vector2f((float)lineL, 5));
-                RectangleShape butt = new RectangleShape(new Vector2f((float)lineX, 5));
-                RectangleShape fuck = new RectangleShape(new Vector2f(5, (float)lineY));
+                RectangleShape debugXY = new RectangleShape(new Vector2f((float)lineL, 1));
+                RectangleShape debugX = new RectangleShape(new Vector2f((float)lineX, 5));
+                RectangleShape debugY = new RectangleShape(new Vector2f(5, (float)lineY));
 
-                butt.FillColor = SFML.Graphics.Color.Red;
-                fuck.FillColor = SFML.Graphics.Color.Green;
-
-                line.Rotation =(float) lineR;
-
-                
+                debugX.FillColor = SFML.Graphics.Color.Red;
+                debugY.FillColor = SFML.Graphics.Color.Green;
+                debugXY.Rotation = (float)lineR;
 
                 moveCamera(delta);
                 delta = timer.ElapsedMilliseconds;
                 timer.Restart();
 
-                pixelPos = Mouse.GetPosition(m_window);
-                worldPos = m_window.MapPixelToCoords(pixelPos);
+                worldPos = m_window.MapPixelToCoords(Mouse.GetPosition(m_window));
 
                 if (frames % 15 == 0)
                     fps = updateFPS(delta);
@@ -127,17 +125,62 @@ namespace BallMaze
                     + " X: " + (m_view.Center.X - (m_view.Size.X / 2))
                     + " Y: " + (m_view.Center.Y - (m_view.Size.Y / 2))
                     + " \nMouse:" + worldPos.ToString()
-                    + " World Bodies:" + world.GetBodyCount().ToString();
+                    + " \nMeters X:" + (worldPos.X / 30f) + "m"
+                    + " \nMeters Y:" + (worldPos.Y / 30f) + "m"
+                    + " \nWorld Bodies:" + world.GetBodyCount().ToString();
                    ;
 
                 world.Step(1 / (float)fps, 8, 1);
-
                 m_window.Clear(CornflowerBlue);
 
-                //DRAW
+                RectangleShape butt = new RectangleShape(new Vector2f(10, 500));
+                RectangleShape fuck = new RectangleShape(new Vector2f(10, 500));
+                butt.Position = new Vector2f(500, 500);
+                
+                butt.FillColor = SFML.Graphics.Color.Cyan;
+                fuck.FillColor = SFML.Graphics.Color.Magenta;
+
+                double XL = System.Math.Atan2(butt.Position.Y - worldPos.Y, butt.Position.X - worldPos.X);
+                double a1 = butt.Size.Y;
+                double a2 = fuck.Size.Y;
+                double L = System.Math.Sqrt(System.Math.Pow(butt.Position.X - worldPos.X, 2) + System.Math.Pow(butt.Position.Y - worldPos.Y, 2));
+                L = System.Math.Min(L, a1 + a2);
+
+                double dick = ((a1 * a1) + (L * L) - (a2 * a2)) / (2 * a1 * L);
+                double bdick = ((a1 * a1) + (a2 * a2) - (L * L)) / (2 * a1 * a2);
+
+                double a = System.Math.Acos(dick);
+                double b = System.Math.Acos(bdick);
+                
+                
+                XL = (XL * 180) / System.Math.PI;
+                a = (a * 180) / System.Math.PI;
+                b = (b * 180) / System.Math.PI;
+
+               
+
+                XL += 90.0f;
+                //a += 90.0f;
+                //b -= 0.0f;
+
+                double lil_O = XL - a;
+                double big_O = 180 - b + lil_O;
+
+
+                butt.Rotation = (float)lil_O;
+                fuck.Rotation = (float)big_O;
+
+                text.DisplayedString = big_O.ToString();
+
+                fuck.Position = new Vector2f(butt.Position.X + (float)(butt.Size.Y * System.Math.Cos((butt.Rotation+90)*System.Math.PI/180)), butt.Position.Y + (float)(butt.Size.Y * System.Math.Sin((butt.Rotation+90)*System.Math.PI/180)));
+
+                
+                //DRAW =================================================================================================================
+                m_window.Draw(debugX);
+                m_window.Draw(debugY);
+                m_window.Draw(debugXY);
                 m_window.Draw(butt);
                 m_window.Draw(fuck);
-                m_window.Draw(line);
 
 
                 Body body = world.GetBodyList();

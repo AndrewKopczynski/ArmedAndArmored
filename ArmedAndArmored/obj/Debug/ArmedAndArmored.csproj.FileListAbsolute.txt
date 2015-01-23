@@ -8,3 +8,12 @@ c:\users\andrew\documents\visual studio 2012\Projects\ArmedAndArmored\ArmedAndAr
 c:\users\andrew\documents\visual studio 2012\Projects\ArmedAndArmored\ArmedAndArmored\obj\Debug\ArmedAndArmored.exe
 c:\users\andrew\documents\visual studio 2012\Projects\ArmedAndArmored\ArmedAndArmored\obj\Debug\ArmedAndArmored.pdb
 c:\users\andrew\documents\visual studio 2012\Projects\ArmedAndArmored\ArmedAndArmored\bin\Debug\Box2DX.dll
+C:\Users\Divaya\Documents\Visual Studio 2012\Projects\ArmedAndArmored\ArmedAndArmored\bin\Debug\ArmedAndArmored.exe.config
+C:\Users\Divaya\Documents\Visual Studio 2012\Projects\ArmedAndArmored\ArmedAndArmored\obj\Debug\ArmedAndArmored.exe
+C:\Users\Divaya\Documents\Visual Studio 2012\Projects\ArmedAndArmored\ArmedAndArmored\obj\Debug\ArmedAndArmored.pdb
+C:\Users\Divaya\Documents\Visual Studio 2012\Projects\ArmedAndArmored\ArmedAndArmored\bin\Debug\ArmedAndArmored.exe
+C:\Users\Divaya\Documents\Visual Studio 2012\Projects\ArmedAndArmored\ArmedAndArmored\bin\Debug\ArmedAndArmored.pdb
+C:\Users\Divaya\Documents\Visual Studio 2012\Projects\ArmedAndArmored\ArmedAndArmored\bin\Debug\sfmlnet-audio-2.dll
+C:\Users\Divaya\Documents\Visual Studio 2012\Projects\ArmedAndArmored\ArmedAndArmored\bin\Debug\sfmlnet-graphics-2.dll
+C:\Users\Divaya\Documents\Visual Studio 2012\Projects\ArmedAndArmored\ArmedAndArmored\bin\Debug\sfmlnet-window-2.dll
+C:\Users\Divaya\Documents\Visual Studio 2012\Projects\ArmedAndArmored\ArmedAndArmored\obj\Debug\ArmedAndArmored.csprojResolveAssemblyReference.cache
