@@ -9,7 +9,7 @@ using Box2DX.Collision;
 using Box2DX.Common;
 using Box2DX.Dynamics;
 
-namespace AaA
+namespace ArmedAndArmored
 {
     public static class Program
     {
@@ -89,6 +89,8 @@ namespace AaA
             long frames = 0;
             int fps = 60;
 
+            IKSolver ik = new IKSolver();
+
             while (m_window.IsOpen())
             {
                 m_window.DispatchEvents();
@@ -133,55 +135,29 @@ namespace AaA
                 world.Step(1 / (float)fps, 8, 1);
                 m_window.Clear(CornflowerBlue);
 
-                RectangleShape butt = new RectangleShape(new Vector2f(10, 500));
-                RectangleShape fuck = new RectangleShape(new Vector2f(10, 500));
-                butt.Position = new Vector2f(500, 500);
-                
-                butt.FillColor = SFML.Graphics.Color.Cyan;
-                fuck.FillColor = SFML.Graphics.Color.Magenta;
+                //test class
 
-                double XL = System.Math.Atan2(butt.Position.Y - worldPos.Y, butt.Position.X - worldPos.X);
-                double a1 = butt.Size.Y;
-                double a2 = fuck.Size.Y;
-                double L = System.Math.Sqrt(System.Math.Pow(butt.Position.X - worldPos.X, 2) + System.Math.Pow(butt.Position.Y - worldPos.Y, 2));
-                L = System.Math.Min(L, a1 + a2);
+                RectangleShape armA = new RectangleShape(new Vector2f(10, 300));
+                RectangleShape armB = new RectangleShape(new Vector2f(10, 200));
+                armA.Position = new Vector2f(frames-1000, 0);
+                armA.FillColor = SFML.Graphics.Color.Cyan;
+                armB.FillColor = SFML.Graphics.Color.Magenta;
 
-                double dick = ((a1 * a1) + (L * L) - (a2 * a2)) / (2 * a1 * L);
-                double bdick = ((a1 * a1) + (a2 * a2) - (L * L)) / (2 * a1 * a2);
+                ik.solve(armA, armB, worldPos, delta);
 
-                double a = System.Math.Acos(dick);
-                double b = System.Math.Acos(bdick);
-                
-                
-                XL = (XL * 180) / System.Math.PI;
-                a = (a * 180) / System.Math.PI;
-                b = (b * 180) / System.Math.PI;
+                armA = ik.UpperArm;
+                armB = ik.LowerArm;
 
-               
+                text.DisplayedString = ik.WentFast.ToString();
 
-                XL += 90.0f;
-                //a += 90.0f;
-                //b -= 0.0f;
-
-                double lil_O = XL - a;
-                double big_O = 180 - b + lil_O;
-
-
-                butt.Rotation = (float)lil_O;
-                fuck.Rotation = (float)big_O;
-
-                text.DisplayedString = big_O.ToString();
-
-                fuck.Position = new Vector2f(butt.Position.X + (float)(butt.Size.Y * System.Math.Cos((butt.Rotation+90)*System.Math.PI/180)), butt.Position.Y + (float)(butt.Size.Y * System.Math.Sin((butt.Rotation+90)*System.Math.PI/180)));
-
-                
                 //DRAW =================================================================================================================
                 m_window.Draw(debugX);
                 m_window.Draw(debugY);
                 m_window.Draw(debugXY);
-                m_window.Draw(butt);
-                m_window.Draw(fuck);
-
+                m_window.Draw(armA);
+                m_window.Draw(armB);
+                m_window.Draw(ik.UpperArmReachRadius);
+                m_window.Draw(ik.LowerArmReachRadius);
 
                 Body body = world.GetBodyList();
                 while (body.GetNext() != null)
