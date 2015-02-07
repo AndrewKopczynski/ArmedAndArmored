@@ -23,18 +23,24 @@ namespace ArmedAndArmored
         private float lA;
         private float lB;
 
-        private float speed = 25.0f;
+        private double upperArmSpeed = -1;
+        private double lowerArmSpeed = -1;
 
-        private float rotA;
-        private float lastRotA;
+        private Rotation rotA = new Rotation();
+        private Rotation lastRotA = new Rotation();
 
-        private float rotB;
-        private float lastRotB;
+        private Rotation rotB = new Rotation();
+        private Rotation lastRotB = new Rotation();
 
         private bool wentFast;
 
         public void solve(RectangleShape upper, RectangleShape lower, Vector2f pointAt, double delta)
         {
+            float speed;        //holder for speed
+            float cw;           //used to figure out if the arm should go clockwise or not
+            float ccw;          //same as cw, but for counter clockwise
+
+            wentFast = false;
             upperArm = upper;
             lowerArm = lower;
 
@@ -56,67 +62,62 @@ namespace ArmedAndArmored
             double b = Math.Acos((Math.Pow(lA, 2) + Math.Pow(lB, 2) - Math.Pow(L, 2)) / (2 * lA * lB));
 
             //Convert stuff so it's easier
-            //TODO: maybe do this stuff in rad and convert just before adjust
             XL = radToDeg(XL);
             a = radToDeg(a);
             b = radToDeg(b);
 
-            //SFML offset
+            //SFML offset, because 0 degrees is down in SFML
             XL += SFML_ROT;
 
             //Apply rotations
-            rotA = (float)(XL - a);
-            rotB = (float)(180 - b + rotA);
+            rotA.Rot = (float)(XL - a);
+            rotB.Rot = (float)(180 - b + rotA.Rot);
 
-            //rotA += SFML_ROT;
-            //rotB += SFML_ROT;
-
-            float temp = (float)(speed * (delta / 1000f));
-
-           
-            System.Console.WriteLine(rotB.ToString() + " vs " + lastRotB.ToString());
-
-            if (lastRotA + temp > rotA && lastRotA - temp < rotA)
+            if (upperArmSpeed > 0)
             {
-                wentFast = false;
-            }
-            else if (rotA - lastRotA > temp)
-            {
-                wentFast = true;
-                rotA = lastRotA + temp;
-            }
-            else if (rotA - lastRotA < temp)
-            {
-                wentFast = true;
-                rotA = lastRotA - temp;
-            }
-            else
-                wentFast = false;
+                ccw = RotationSolver.diff(rotA, lastRotA).Rot;
+                cw = RotationSolver.diff(lastRotA, rotA).Rot;
+                speed = (float)Delta.calc(upperArmSpeed, delta);
 
-            if (lastRotB + temp > rotB && lastRotB - temp < rotB)
-            {
-                wentFast = false;
+                if (RotationSolver.smallestDiff(rotA, lastRotA).Rot > speed)
+                {
+                    wentFast = true;
+                    if (cw > ccw)
+                    {
+                        rotA.Rot = lastRotA.Rot + speed;
+                    }
+                    else if (ccw > cw)
+                    {
+                        rotA.Rot = lastRotA.Rot - speed;
+                    }
+                }
             }
-            else if (rotB - lastRotB > temp)
-            {
-                wentFast = true;
-                rotB = lastRotB + temp;
-            }
-            else if (rotB - lastRotB < temp)
-            {
-                wentFast = true;
-                rotB = lastRotB - temp;
-            }
-            else
-                wentFast = false;
-     
- 
 
-            lastRotA = rotA;
-            lastRotB = rotB;
+            if (lowerArmSpeed > 0)
+            { 
+                ccw = RotationSolver.diff(rotB, lastRotB).Rot;
+                cw = RotationSolver.diff(lastRotB, rotB).Rot;
+                speed = (float)Delta.calc(lowerArmSpeed, delta);
 
-            upperArm.Rotation = rotA;
-            lowerArm.Rotation = rotB;
+                if (Math.Abs(RotationSolver.smallestDiff(rotB, lastRotB).Rot) > speed)
+                {
+                    wentFast = true;
+                    if (cw > ccw)
+                    {
+                        rotB.Rot = lastRotB.Rot + speed;
+                    }
+                    else if (ccw > cw)
+                    {
+                        rotB.Rot = lastRotB.Rot - speed;
+                    }
+                }
+            }
+
+            lastRotA.Rot = rotA.Rot;
+            lastRotB.Rot = rotB.Rot;
+
+            upperArm.Rotation = rotA.Rot;
+            lowerArm.Rotation = rotB.Rot;
 
             //Adjust positioning of second arm now
             lowerArm.Position = new Vector2f(upperArm.Position.X + (float)(lA * System.Math.Cos(degToRad(upperArm.Rotation + SFML_ROT))), upperArm.Position.Y + (float)(lA * System.Math.Sin(degToRad(upperArm.Rotation + SFML_ROT))));
@@ -127,6 +128,11 @@ namespace ArmedAndArmored
         public CircleShape UpperArmReachRadius { get { return new DebugCircle(lA, upperArm.Position).Circle; } }
         public CircleShape LowerArmReachRadius { get { return new DebugCircle(lB, lowerArm.Position).Circle; } }
         public bool WentFast { get { return wentFast; } }
+        public double UpperArmSpeed
+        {
+            get { return upperArmSpeed; }
+            set { upperArmSpeed = value; }
+        }
 
         //because I'm lazy
         private double radToDeg(double a) { return (a * 180) / Math.PI; }

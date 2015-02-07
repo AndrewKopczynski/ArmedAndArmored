@@ -68,10 +68,6 @@ namespace ArmedAndArmored
 
             //Image image = new Image("image here");
 
-            // Texture texture;
-
-            //Sprite sprite;
-
             Vector2f center = new Vector2f(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
             Vector2f size = new Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -137,16 +133,18 @@ namespace ArmedAndArmored
 
                 //test class
 
-                RectangleShape armA = new RectangleShape(new Vector2f(10, 300));
+                RectangleShape armA = new RectangleShape(new Vector2f(10, 200));
                 RectangleShape armB = new RectangleShape(new Vector2f(10, 200));
-                armA.Position = new Vector2f(frames-1000, 0);
+
+                armA.Position = new Vector2f(500, 500);
+
                 armA.FillColor = SFML.Graphics.Color.Cyan;
                 armB.FillColor = SFML.Graphics.Color.Magenta;
 
                 ik.solve(armA, armB, worldPos, delta);
 
-                armA = ik.UpperArm;
-                armB = ik.LowerArm;
+                armA = new RectangleShape(ik.UpperArm);
+                armB = new RectangleShape(ik.LowerArm);
 
                 text.DisplayedString = ik.WentFast.ToString();
 
@@ -181,7 +179,7 @@ namespace ArmedAndArmored
                 m_window.Display();
                 frames++;
                 //low fps test
-                //System.Threading.Thread.Sleep(55);
+                //System.Threading.Thread.Sleep(100);
             }
         }
 
