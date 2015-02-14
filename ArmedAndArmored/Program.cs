@@ -9,6 +9,8 @@ using Box2DX.Collision;
 using Box2DX.Common;
 using Box2DX.Dynamics;
 
+using ArmedAndArmored.Animation;
+
 namespace ArmedAndArmored
 {
     public static class Program
@@ -30,6 +32,7 @@ namespace ArmedAndArmored
         private static float m_zoomFactor = 1.0f;
 
         private static int calls = 0;
+        private static Vector2f lastMouseClick = new Vector2f(1280, 720); //unused
 
         private static List<Keyboard.Key> m_keyboard = new List<Keyboard.Key>();
 
@@ -45,14 +48,14 @@ namespace ArmedAndArmored
             Box2DX.Dynamics.World world = new Box2DX.Dynamics.World(worldAabb, gravity, false);
             //CreateGround(world, 500, 500);
 
-            Vector2f worldPos = new Vector2f(0f, 0f); ;
+            Vector2f worldPos = new Vector2f(0f, 0f);
 
             m_window = new RenderWindow(new VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "SFML Window");
             m_window.SetFramerateLimit(60);
             m_window.Closed += (sender, eventArgs) => m_window.Close();
             m_window.GainedFocus += new EventHandler(OnGainedFocus);
             m_window.LostFocus += new EventHandler(OnLostFocus);
-            //m_window.MouseButtonPressed += new EventHandler<MouseButtonEventArgs>(MouseButtonPressed);
+            m_window.MouseButtonPressed += new EventHandler<MouseButtonEventArgs>(MouseButtonPressed);
             m_window.MouseWheelMoved += new EventHandler<MouseWheelEventArgs>(OnMouseScroll);
             m_window.KeyPressed += new EventHandler<KeyEventArgs>(OnKeyDown);
             m_window.KeyReleased += new EventHandler<KeyEventArgs>(OnKeyUp);
@@ -73,7 +76,6 @@ namespace ArmedAndArmored
 
             m_view = new View(center, size);
 
-
             Font font = new Font(@"..\..\fonts\arial.ttf");
             Text text = new Text("FPS: ", font);
             text.CharacterSize = 16;
@@ -85,7 +87,23 @@ namespace ArmedAndArmored
             long frames = 0;
             int fps = 60;
 
+            //test bones
+            Bone pelvis = new Bone(new Vector2f(500, 500), 50);
+            Bone rightUpperLeg = new Bone(new Vector2f(0, 0), 50);
+            Bone rightLowerLeg = new Bone(new Vector2f(0, 0), 50);
+
+            Bone leftUpperLeg = new Bone(new Vector2f(0, 0), 50);
+            Bone leftLowerLeg = new Bone(new Vector2f(0, 0), 50);
+
             IKSolver ik = new IKSolver();
+            ik.UpperArmSpeed = 50;
+            ik.LowerArmSpeed = 90;
+
+            pelvis.addBone(rightUpperLeg);
+            pelvis.addBone(leftUpperLeg);
+
+            rightUpperLeg.addBone(rightLowerLeg);
+            leftUpperLeg.addBone(leftLowerLeg);
 
             while (m_window.IsOpen())
             {
@@ -131,31 +149,43 @@ namespace ArmedAndArmored
                 world.Step(1 / (float)fps, 8, 1);
                 m_window.Clear(CornflowerBlue);
 
+                RectangleShape armA = new RectangleShape(new Vector2f(10, WINDOW_WIDTH));
+                RectangleShape armB = new RectangleShape(new Vector2f(10, WINDOW_HEIGHT));
+
+                armB.FillColor = SFML.Graphics.Color.Red;
+                ik.solve(armA, armB, lastMouseClick, delta);
+
                 //test class
+                //pelvis.Rotation.Value = 0;
+                pelvis.Update();
+                rightUpperLeg.Update();
+                rightLowerLeg.Update();
+                leftUpperLeg.Update();
+                leftLowerLeg.Update();
 
-                RectangleShape armA = new RectangleShape(new Vector2f(10, 200));
-                RectangleShape armB = new RectangleShape(new Vector2f(10, 200));
-
-                armA.Position = new Vector2f(500, 500);
-
-                armA.FillColor = SFML.Graphics.Color.Cyan;
-                armB.FillColor = SFML.Graphics.Color.Magenta;
-
-                ik.solve(armA, armB, worldPos, delta);
-
-                armA = new RectangleShape(ik.UpperArm);
-                armB = new RectangleShape(ik.LowerArm);
-
-                text.DisplayedString = ik.WentFast.ToString();
+                //pelvis.Position = new Vector2f(500, frames);
+                pelvis.Rotation.Value += 1f;
+                rightUpperLeg.Offset.Value += 1f;
+                rightLowerLeg.Offset.Value += 1f;
+                leftUpperLeg.Offset.Value -= 1f;
+                leftLowerLeg.Offset.Value -= 1f;
 
                 //DRAW =================================================================================================================
-                m_window.Draw(debugX);
-                m_window.Draw(debugY);
-                m_window.Draw(debugXY);
+                //m_window.Draw(debugX);
+                //m_window.Draw(debugY);
+                //m_window.Draw(debugXY);
                 m_window.Draw(armA);
                 m_window.Draw(armB);
                 m_window.Draw(ik.UpperArmReachRadius);
                 m_window.Draw(ik.LowerArmReachRadius);
+
+                //test
+                m_window.Draw(pelvis.DebugDraw);
+                m_window.Draw(pelvis.NextBone[0].DebugDraw);
+                m_window.Draw(pelvis.NextBone[0].NextBone[0].DebugDraw);
+                m_window.Draw(pelvis.NextBone[1].DebugDraw);
+                m_window.Draw(pelvis.NextBone[1].NextBone[0].DebugDraw);
+                
 
                 Body body = world.GetBodyList();
                 while (body.GetNext() != null)
@@ -269,7 +299,7 @@ namespace ArmedAndArmored
 
         static void MouseButtonPressed(object sender, MouseButtonEventArgs e)
         {
-            //keep for future clickin n dickin
+            //unused for now
         }
 
         static void OnKeyDown(object sender, KeyEventArgs e)

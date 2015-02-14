@@ -7,15 +7,20 @@ using System.Threading.Tasks;
 namespace ArmedAndArmored
 {
     //Solves degree rotation and roll-over problems for me.
-    class Rotation
+    public class Rotation
     {
         private float rotation;
 
-        public Rotation() { }
+        public Rotation() { rotation = 0.0f; }
 
         public Rotation(float rot)
         {
             rotation = solveRotation(rot);
+        }
+
+        public Rotation(Rotation rot)
+        {
+            rotation = rot.Value;
         }
 
         private float solveRotation(float rot)
@@ -35,7 +40,7 @@ namespace ArmedAndArmored
             return rot;
         }
 
-        public float Rot
+        public float Value
         {
             get { return rotation; }
             set { rotation = solveRotation(value); }

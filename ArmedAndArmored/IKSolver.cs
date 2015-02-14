@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using SFML.Graphics;
 using SFML.Window;
 
+using ArmedAndArmored.Solver;
+
 namespace ArmedAndArmored
 {
     //Solves IK for two RectangleShapes for very very basic inverse kinematics
-    class IKSolver
+    public class IKSolver
     {
         //SFML rotational offset
         const float SFML_ROT = 90.00000f;
@@ -62,65 +64,66 @@ namespace ArmedAndArmored
             double b = Math.Acos((Math.Pow(lA, 2) + Math.Pow(lB, 2) - Math.Pow(L, 2)) / (2 * lA * lB));
 
             //Convert stuff so it's easier
-            XL = radToDeg(XL);
-            a = radToDeg(a);
-            b = radToDeg(b);
+            XL = Angle.radToDeg(XL);
+            a = Angle.radToDeg(a);
+            b = Angle.radToDeg(b);
 
             //SFML offset, because 0 degrees is down in SFML
             XL += SFML_ROT;
 
             //Apply rotations
-            rotA.Rot = (float)(XL - a);
-            rotB.Rot = (float)(180 - b + rotA.Rot);
+            rotA.Value = (float)(XL - a);
+            rotB.Value = (float)(180 - b + rotA.Value);
 
             if (upperArmSpeed > 0)
             {
-                ccw = RotationSolver.diff(rotA, lastRotA).Rot;
-                cw = RotationSolver.diff(lastRotA, rotA).Rot;
+                ccw = RotationSolver.diff(rotA, lastRotA).Value;
+                cw = RotationSolver.diff(lastRotA, rotA).Value;
                 speed = (float)Delta.calc(upperArmSpeed, delta);
 
-                if (RotationSolver.smallestDiff(rotA, lastRotA).Rot > speed)
+                if (RotationSolver.smallestDiff(rotA, lastRotA).Value > speed)
                 {
                     wentFast = true;
                     if (cw > ccw)
                     {
-                        rotA.Rot = lastRotA.Rot + speed;
+                        rotA.Value = lastRotA.Value + speed;
                     }
                     else if (ccw > cw)
                     {
-                        rotA.Rot = lastRotA.Rot - speed;
+                        rotA.Value = lastRotA.Value - speed;
                     }
                 }
             }
 
             if (lowerArmSpeed > 0)
             { 
-                ccw = RotationSolver.diff(rotB, lastRotB).Rot;
-                cw = RotationSolver.diff(lastRotB, rotB).Rot;
+                ccw = RotationSolver.diff(rotB, lastRotB).Value;
+                cw = RotationSolver.diff(lastRotB, rotB).Value;
                 speed = (float)Delta.calc(lowerArmSpeed, delta);
 
-                if (Math.Abs(RotationSolver.smallestDiff(rotB, lastRotB).Rot) > speed)
+                if (Math.Abs(RotationSolver.smallestDiff(rotB, lastRotB).Value) > speed)
                 {
                     wentFast = true;
                     if (cw > ccw)
                     {
-                        rotB.Rot = lastRotB.Rot + speed;
+                        rotB.Value = lastRotB.Value + speed;
                     }
                     else if (ccw > cw)
                     {
-                        rotB.Rot = lastRotB.Rot - speed;
+                        rotB.Value = lastRotB.Value - speed;
                     }
                 }
             }
 
-            lastRotA.Rot = rotA.Rot;
-            lastRotB.Rot = rotB.Rot;
+            lastRotA.Value = rotA.Value;
+            lastRotB.Value = rotB.Value;
 
-            upperArm.Rotation = rotA.Rot;
-            lowerArm.Rotation = rotB.Rot;
+            upperArm.Rotation = rotA.Value;
+            lowerArm.Rotation = rotB.Value;
 
             //Adjust positioning of second arm now
-            lowerArm.Position = new Vector2f(upperArm.Position.X + (float)(lA * System.Math.Cos(degToRad(upperArm.Rotation + SFML_ROT))), upperArm.Position.Y + (float)(lA * System.Math.Sin(degToRad(upperArm.Rotation + SFML_ROT))));
+            lowerArm.Position = Solver.PositionSolver.solve(upperArm.Position, rotA, 0, lA);
+            //lowerArm.Position = new Vector2f(upperArm.Position.X + (float)(lA * System.Math.Cos(degToRad(upperArm.Rotation + SFML_ROT))), upperArm.Position.Y + (float)(lA * System.Math.Sin(degToRad(upperArm.Rotation + SFML_ROT))));
         }
 
         public RectangleShape UpperArm { get { return new RectangleShape(upperArm); } }
@@ -133,9 +136,10 @@ namespace ArmedAndArmored
             get { return upperArmSpeed; }
             set { upperArmSpeed = value; }
         }
-
-        //because I'm lazy
-        private double radToDeg(double a) { return (a * 180) / Math.PI; }
-        private double degToRad(double a) { return (a * Math.PI) / 180; }
+        public double LowerArmSpeed
+        {
+            get { return lowerArmSpeed; }
+            set { lowerArmSpeed = value; }
+        }
     }
 }

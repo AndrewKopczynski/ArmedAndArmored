@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ArmedAndArmored
 {
-    static class Delta
+    public static class Delta
     {
         public const double DELTA_DIV = 1000f; 
 
